@@ -80,21 +80,19 @@ class NaiveBayes:
         for target in self.data_train[self.target_column].unique():
             self.target_prob[target] = self.target_freq[target] / self.data_train.shape[0]
 
-    def train(self):
+    def fit(self):
         """
         Train the model
         """
         self.calculate_frequency_column()
         self.calculate_probability_column()
 
-
     def predict(self, data_test: pd.DataFrame):
         """
         Predict the data. Input is just one row
         """
+        data_test = self.apply_binning(data_test)
         result = {}
-        for target in self.data_train[self.target_column].unique():
-            print(target)
         for target in self.data_train[self.target_column].unique():
             prob = self.target_prob[target]
             for col in self.categorical_columns:
@@ -123,6 +121,14 @@ class NaiveBayes:
                 'binning_info': self.binning_info
             }, file)
         print(f"Model saved to {model_file_name}")
+
+    def apply_binning(self, data: pd.DataFrame):
+        """
+        Apply binning information to the test data.
+        """
+        for col, bins in self.binning_info.items():
+            data[f'{col}_binned'] = pd.cut(data[col], bins=bins)
+        return data
 
     @classmethod
     def load_model(cls, model_file_name: str = 'naive_bayes_model.pkl'):
@@ -167,10 +173,10 @@ if __name__ == "__main__":
     # Drop NaN
     df = df.dropna()
     nb: NaiveBayes = NaiveBayes(df, cat_col_names, num_col_names, target_col)
-    nb.train()
+    nb.fit()
     nb.save_model()
     # for col, value in nb.data_train_freq.items():
     #     for target, freq in value.items():
     #         print(col, target)
-    print(df.iloc[107])
-    print(nb.predict(df.iloc[107]))
+    print(df.iloc[200])
+    print(nb.predict(df.iloc[200]))
