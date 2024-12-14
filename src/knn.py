@@ -1,9 +1,10 @@
 import numpy as np
 from collections import Counter
 class KNN:
-    def __init__(self, k, metric):
+    def __init__(self, k, metric, p = 3):
         self.k = k
         self.metric = metric
+        self.p = p
 
     def fit(self, X_train, y_train):
         self.X_train = X_train
@@ -13,8 +14,8 @@ class KNN:
         return np.sqrt(np.sum((a-b)**2))
     def manhattan_distance(self, a, b):
         return np.sum(np.abs(a-b))
-    def minskowski_distance(self, a, b, p):
-        return np.sum(np.abs(a-b)**p)**(1/p)
+    def minskowski_distance(self, a, b):
+        return np.sum(np.abs(a-b)**self.p)**(1/self.p)
     
     def predict_single(self, X):
         if self.metric == 'euclidean':
@@ -22,7 +23,7 @@ class KNN:
         elif self.metric == 'manhattan':
             distances = [self.manhattan_distance(x_train, X) for x_train in self.X_train]
         elif self.metric == 'minskowski':
-            distances = [self.minskowski_distance(x_train, X, 3) for x_train in self.X_train]
+            distances = [self.minskowski_distance(x_train, X) for x_train in self.X_train]
         else:
             raise ValueError('Invalid metric')
         
