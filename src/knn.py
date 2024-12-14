@@ -40,7 +40,10 @@ class KNN:
         return most_common[0][0]
     
     def predict(self, X):
-        predictions = [self.predict_single(x) for x in X]
+        predictions = []
+        for i, x in enumerate(X):
+            print(i)
+            predictions.append(self.predict_single(x))
         return np.array(predictions)
     
     def save_model(self, model_file_name: str = 'knn_model.pkl'):
