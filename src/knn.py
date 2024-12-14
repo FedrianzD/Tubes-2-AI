@@ -1,5 +1,6 @@
 import numpy as np
 from collections import Counter
+from joblib import dump, load
 class KNN:
     def __init__(self, k, metric, p = 3):
         self.k = k
@@ -41,6 +42,13 @@ class KNN:
     def predict(self, X):
         predictions = [self.predict_single(x) for x in X]
         return np.array(predictions)
+    
+    def save_model(self, model_file_name: str = 'knn_model.pkl'):
+        dump(self, model_file_name)
+        print(f"Model saved to {model_file_name}")
+        
+    def load_model(self, model_file_name: str = 'knn_model.pkl'):
+        return load(model_file_name)
 
 if __name__ == "__main__":
     X_train = np.array(np.random.randint(1, 10, (5, 2)))
