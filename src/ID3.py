@@ -1,5 +1,6 @@
 import numpy as np
 from collections import Counter
+import pickle # untuk save dan load
 
 class ID3:
     def __init__(self):
@@ -132,6 +133,38 @@ class ID3:
                 best_value = value
                 best_attribute = a
         return best_attribute
+    
+    # def argmax(self, examples, attributes):
+    #     gains = []
+    #     for a in attributes:
+    #         if a in self.continuous_attributes:
+    #             if a not in self.discretization_thresholds:
+    #                 self.discretization_thresholds[a] = self.discretize_continuous_attribute(examples, a)
+                
+    #             threshold = self.discretization_thresholds[a]
+    #             binary_examples = examples.copy()
+    #             binary_examples[:, a] = (binary_examples[:, a] < threshold).astype(int)
+    #             value = self.importance(a, binary_examples, "information_gain")
+    #             gain_ratio_value = self.importance(a, binary_examples, "gain_ratio")
+    #         else:
+    #             value = self.importance(a, examples, "information_gain")
+    #             gain_ratio_value = self.importance(a, examples, "gain_ratio")
+            
+    #         gains.append((a, value, gain_ratio_value))
+        
+    #     mean_gain = np.mean([g[1] for g in gains])
+        
+    #     above_average_gains = [
+    #         (attr, gain, gain_ratio) for attr, gain, gain_ratio in gains 
+    #         if gain > mean_gain
+    #     ]
+        
+    #     if not above_average_gains:
+    #         above_average_gains = gains
+        
+    #     best_attribute = max(above_average_gains, key=lambda x: x[2])[0]
+        
+    #     return best_attribute
 
     def decision_tree_learning(self, examples, attributes, parent_examples):
         if len(examples) == 0:
@@ -189,7 +222,7 @@ class ID3:
         if tree is None:
             tree = self.tree
         
-        # Base case: Leaf
+        # Base case: Leaf (label)
         if not isinstance(tree, dict):
             return tree
         
@@ -210,6 +243,18 @@ class ID3:
         X = np.array(X)
         predictions = [self.predict_single(x) for x in X]
         return np.array(predictions)
+
+    def save(self, filepath):
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+        print(f"Model saved to {filepath}")
+
+    @classmethod
+    def load(cls, filepath):
+        with open(filepath, 'rb') as f:
+            model = pickle.load(f)
+        print(f"Model loaded from {filepath}")
+        return model
 
 if __name__ == "__main__":
     X_train1 = np.array([
