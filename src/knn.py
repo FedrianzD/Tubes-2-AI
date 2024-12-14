@@ -46,9 +46,16 @@ class KNN:
     def save_model(self, model_file_name: str = 'knn_model.pkl'):
         dump(self, model_file_name)
         print(f"Model saved to {model_file_name}")
-        
+
     def load_model(self, model_file_name: str = 'knn_model.pkl'):
         return load(model_file_name)
+    
+    def make_submission(self, X_test, file_name='submission.csv'):
+        predictions = self.predict(X_test)
+        id = X_test['id']
+        submission_data = np.column_stack((id, predictions))
+        np.savetxt(file_name, submission_data, fmt='%d', delimiter=',', header='id,prediction')
+        print(f"Submission saved to {file_name}")
 
 if __name__ == "__main__":
     X_train = np.array(np.random.randint(1, 10, (5, 2)))
