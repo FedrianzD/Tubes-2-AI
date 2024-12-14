@@ -3,9 +3,7 @@ import pandas as pd
 from typing import List, Dict
 
 class NaiveBayes:
-    def __init__(self, data_train: pd.DataFrame, categorical_columns: List[str], numerical_columns: List[str], target_column: str,
-                 data_train_freq: Dict[str, Dict[str, Dict[str, int]]] = {}, data_train_prob: Dict[str, Dict[str, Dict[str, float]]] = {},
-                    target_freq: Dict[str, int] = {}, target_prob: Dict[str, float] = {}, binning_info: Dict[str, pd.IntervalIndex] = {}):
+    def __init__(self, data_train: pd.DataFrame, categorical_columns: List[str], numerical_columns: List[str], target_column: str, data_train_freq: Dict[str, Dict[str, Dict[str, int]]] = {}, data_train_prob: Dict[str, Dict[str, Dict[str, float]]] = {}, target_freq: Dict[str, int] = {}, target_prob: Dict[str, float] = {}, binning_info: Dict[str, pd.IntervalIndex] = {}):
         """
         :param data_train: data used to train the model
         :param categorical_columns: list of column name that contains categorical values
