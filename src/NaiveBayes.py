@@ -4,13 +4,11 @@ import pandas as pd
 import numpy as np
 
 
-class NaiveBayes():
+class NaiveBayes:
     def __init__(self, target_column: str, bin_number: int = 20):
         """
-        :param data_train: data used to train the model
-        :param categorical_columns: list of column name that contains categorical values
-        :param numerical_columns: list of column name that contains numerical values
         :param target_column: column dataframe target. assume only one column
+        :param bin_number: number of bins for numerical columns
         """
         self.data_train: pd.DataFrame = None
         self.classes_ = None
@@ -24,13 +22,15 @@ class NaiveBayes():
         self.target_freq: Dict[str, int] = {}  # [key: target unique values, value: frequency of target unique values]
         self.target_prob: Dict[
             str, float] = {}  # [key: target unique values, value: probability of target unique values]
-        self.binning_info: Dict[str, pd.IntervalIndex] = {}  # [key: column name, value: binning information]
         self.bin_number: int = bin_number
+        self.number_of_rows: int = 0
+        self.unique_target: np.array = None
 
     def define_column_type(self):
         """
-        Define the type of each column in the dataframe
+        Define the type of each column in the dataframe into categorical or numerical
         """
+        self.number_of_rows = self.data_train.shape[0]
         for col in self.data_train.columns:
             if col == self.target_column:
                 continue
@@ -43,7 +43,7 @@ class NaiveBayes():
 
     def print_frequency_details(self):
         """
-        Beautifully print the frequency details of categorical and numerical columns
+        Beautify print the frequency details of categorical and numerical columns
         """
         print("\n--- Frequency Details ---")
 
@@ -70,7 +70,7 @@ class NaiveBayes():
 
     def print_probability_details(self):
         """
-        Beautifully print the probability details of categorical and numerical columns
+        Beautify print the probability details of categorical and numerical columns
         """
         print("\n--- Probability Details ---")
 
@@ -98,7 +98,7 @@ class NaiveBayes():
     def calculate_frequency_column(self):
         for col in self.categorical_columns:
             self.data_train_freq[col] = {}
-            for target in self.data_train[self.target_column].unique():
+            for target in self.unique_target:
                 freq = {}
                 for value in self.data_train[col].unique():
                     freq[value] = self.data_train[
@@ -110,14 +110,14 @@ class NaiveBayes():
             # Create binned column
             self.data_train[f'{col}_binned'] = pd.qcut(self.data_train[col], q=self.bin_number, duplicates='drop')
 
-            for target in self.data_train[self.target_column].unique():
+            for target in self.unique_target:
                 freq = {}
                 for value in self.data_train[f'{col}_binned'].unique():
                     freq[str(value)] = self.data_train[(self.data_train[self.target_column] == target) & (
                             self.data_train[f'{col}_binned'] == value)].shape[0]
                 self.data_train_freq[col][target] = freq
 
-        for target in self.data_train[self.target_column].unique():
+        for target in self.unique_target:
             self.target_freq[target] = self.data_train[self.data_train[self.target_column] == target].shape[0]
 
     def calculate_probability_column(self):
@@ -126,33 +126,35 @@ class NaiveBayes():
         """
         for col in self.categorical_columns:
             self.data_train_prob[col] = {}
-            for target in self.data_train[self.target_column].unique():
+            for target in self.unique_target:
                 prob = {}
                 for value in self.data_train[col].unique():
-                    prob[value] = self.data_train_freq[col][target][value] / self.data_train.shape[0]
+                    prob[value] = self.data_train_freq[col][target][value] / self.number_of_rows
                 self.data_train_prob[col][target] = prob
 
         for col in self.numerical_columns:
             self.data_train_prob[col] = {}
-            for target in self.data_train[self.target_column].unique():
+            for target in self.unique_target:
                 prob = {}
                 for value in self.data_train[f'{col}_binned'].unique():
-                    prob[str(value)] = self.data_train_freq[col][target][str(value)] / self.data_train.shape[0]
+                    prob[str(value)] = self.data_train_freq[col][target][str(value)] / self.number_of_rows
                 self.data_train_prob[col][target] = prob
 
-        for target in self.data_train[self.target_column].unique():
-            self.target_prob[target] = self.target_freq[target] / self.data_train.shape[0]
+        for target in self.unique_target:
+            self.target_prob[target] = self.target_freq[target] / self.number_of_rows
 
     def fit(self, X_train, y):
         """
         Train the model
+        :param X_train: training data
+        :param y: target of training data
         """
-        # Ensure X is a
+        # Set classes, fix X_train
         self.classes_ = np.unique(y)
         if not isinstance(X_train, pd.DataFrame):
             X_train = pd.DataFrame(X_train)
 
-        # Ensure y is a Series
+        # Fix y datatype
         if isinstance(y, np.ndarray):
             y = pd.Series(y, name=self.target_column)
         elif not isinstance(y, pd.Series):
@@ -161,7 +163,7 @@ class NaiveBayes():
         # Combine data
         self.data_train = pd.concat([X_train, y], axis=1)
         self.define_column_type()
-        print(self.data_train.head())
+        self.unique_target = self.data_train[self.target_column].unique()
         self.calculate_frequency_column()
         self.calculate_probability_column()
         return self
@@ -174,15 +176,12 @@ class NaiveBayes():
         for target in self.data_train[self.target_column].unique():
             prob = self.target_prob[target]  # Start with the prior probability of the target class
 
-            # Handle categorical columns
             for col in self.categorical_columns:
                 column_probabilities = self.data_train_prob[col][target]
                 value = data_test[col]
 
-                # Use a fallback probability if the value is missing
-                prob *= column_probabilities.get(value, 1e-6)  # Fallback to a small probability (e.g., 1e-6)
+                prob *= column_probabilities.get(value, 1e-6)
 
-            # Handle numerical columns
             for col in self.numerical_columns:
                 value = data_test[col]
                 column_probabilities = self.data_train_prob[col][target]
@@ -191,7 +190,7 @@ class NaiveBayes():
                 matching_interval = None
                 for interval_str, interval_prob in column_probabilities.items():
                     if interval_str == 'nan':
-                        continue  # Skip invalid entries
+                        continue
 
                     # Parse interval string
                     interval_str_num = interval_str[1:-1]
@@ -213,14 +212,18 @@ class NaiveBayes():
         return max(result, key=result.get)
 
     def predict(self, data_test: Union[pd.DataFrame, np.array]):
+        """
+        Predict the data. Input can be a single row or multiple rows.
+        :param data_test: data to predict
+        :return: numpy array of predicted values
+        """
         if not isinstance(data_test, pd.DataFrame):
             data_test = pd.DataFrame(data_test)
-        print(data_test.head())
         if len(data_test.shape) == 1 or data_test.shape[0] == 1:
-            # If it's a single row (either as a Series or single-row DataFrame)
+            # If single row
             return np.array([self.predict_single(data_test)])
         else:
-            # For multiple rows, apply predict_single to each row
+            # For multiple rows, iterate for each row
             return np.array([self.predict_single(row) for _, row in data_test.iterrows()])
 
     def save_model(self, filename: str = 'nb_model.pkl'):
