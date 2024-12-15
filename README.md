@@ -10,9 +10,9 @@
     <h3>Tugas Besar 2 IF3170 Inteligensi Artifisial</h3>
     <h4> Implementasi Algoritma Pembelajaran Mesin KNN, Naive Bayes, dan ID3</h4>
     <br/>
-    <a href="https://github.com/NoHaitch/Perfect-Magic-Cube-Local-Search/issues">Report Bug</a>
+    <a href="https://github.com/FedrianzD/Tubes-2-AI/issues">Report Bug</a>
     ·
-    <a href="https://github.com/NoHaitch/Perfect-Magic-Cube-Local-Search/issues">Request Feature</a>
+    <a href="https://github.com/FedrianzD/Tubes-2-AI/issues">Request Feature</a>
 <br>
 <br>
 
