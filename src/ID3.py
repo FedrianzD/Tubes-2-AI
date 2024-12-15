@@ -244,13 +244,13 @@ class ID3:
         predictions = [self.predict_single(x) for x in X]
         return np.array(predictions)
 
-    def save(self, filepath):
+    def save_model(self, filepath):
         with open(filepath, 'wb') as f:
             pickle.dump(self, f)
         print(f"Model saved to {filepath}")
 
     @classmethod
-    def load(cls, filepath):
+    def load_model(cls, filepath):
         with open(filepath, 'rb') as f:
             model = pickle.load(f)
         print(f"Model loaded from {filepath}")
