@@ -1,6 +1,7 @@
 import numpy as np
 from collections import Counter
 import pickle # untuk save dan load
+import scipy
 
 class ID3:
     def __init__(self):
@@ -194,7 +195,10 @@ class ID3:
         return tree
     
     def fit(self, X_train, y_train):
-        X_train = np.array(X_train)
+        # Convert sparse matrix to dense numpy array if needed
+        if scipy.sparse.issparse(X_train):
+            X_train = X_train.toarray()
+        
         y_train = np.array(y_train)
         
         encoded_labels = self._encode_labels(y_train)
@@ -240,6 +244,9 @@ class ID3:
         return self.predict_single(X, tree[attribute][value])
     
     def predict(self, X):
+        if scipy.sparse.issparse(X):
+            X = X.toarray()
+        
         X = np.array(X)
         predictions = [self.predict_single(x) for x in X]
         return np.array(predictions)

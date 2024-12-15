@@ -1,6 +1,7 @@
 import numpy as np
 from collections import Counter
 from joblib import dump, load
+import scipy
 class KNN:
     def __init__(self, k, metric, p = 3):
         self.k = k
@@ -8,6 +9,8 @@ class KNN:
         self.p = p
 
     def fit(self, X_train, y_train):
+        if scipy.sparse.issparse(X_train):
+            X_train = X_train.toarray()
         self.X_train = X_train
         self.y_train = y_train
 
@@ -40,9 +43,11 @@ class KNN:
         return most_common[0][0]
     
     def predict(self, X):
+        if scipy.sparse.issparse(X):
+            X = X.toarray()
         predictions = []
         for i, x in enumerate(X):
-            print(i)
+            # print(i)
             predictions.append(self.predict_single(x))
         return np.array(predictions)
     
